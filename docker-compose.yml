@@ -1,0 +1,60 @@
+version: "3.8"
+
+services:
+  backend:
+    build:
+      context: ./blackjack-game
+      dockerfile: Dockerfile
+      args:
+        user: blackjack-game
+        uid: 1000
+    image: blackjack-game-backend
+    container_name: blackjack-game-backend
+    restart: unless-stopped
+    working_dir: /var/www/
+    volumes:
+      - ./blackjack-game:/var/www
+      - ./blackjack-game/docker-compose/php/local.ini:/usr/local/etc/php/conf.d/local.ini # Optional PHP config
+    networks:
+      - blackjack-network
+    depends_on:
+      - redis
+
+  redis:
+    image: redis:alpine
+    container_name: blackjack-redis
+    restart: unless-stopped
+    volumes:
+      - redis_data:/data
+    networks:
+      - blackjack-network
+
+  nginx-backend:
+    image: nginx:alpine
+    container_name: blackjack-nginx-backend
+    restart: unless-stopped
+    ports:
+      - 8000:80
+    volumes:
+      - ./blackjack-game:/var/www
+      - ./blackjack-game/docker-compose/nginx:/etc/nginx/conf.d/
+    networks:
+      - blackjack-network
+
+  frontend:
+    build:
+      context: ./blackjack-game-front
+      dockerfile: Dockerfile
+    container_name: blackjack-game-frontend
+    ports:
+      - "3000:80" # Map port 3000 on the host to port 80 in the container
+    restart: unless-stopped
+    networks:
+      - blackjack-network
+
+volumes:
+  redis_data:
+
+networks:
+  blackjack-network:
+    driver: bridge
