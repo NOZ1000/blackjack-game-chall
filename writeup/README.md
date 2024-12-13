@@ -9,6 +9,17 @@
 - Notice that last byte of first encrypted session block, is first digit of you current money
 - Imagine how to switch that byte
 
+# Solution
+
+Session restoring mechanism is vulnaralbe to CBC Bit flipping attack on AES in mode CBC.
+The last byte of first sessions block is first digit of your amount of money.
+If you iterate throw each possible last byte of `iv`, you could find valid session with `900 000`$.
+Use this session to get flag.
+
+```sh
+curl -X GET http://89.218.2.61:8000/api/game/UUID_OF_VALID_SESSION/flag
+```
+
 ## Exploit POC
 
 ```python
